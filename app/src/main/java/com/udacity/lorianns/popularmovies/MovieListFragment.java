@@ -1,6 +1,7 @@
 package com.udacity.lorianns.popularmovies;
 
 
+import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -36,11 +37,8 @@ import java.util.Arrays;
  */
 public class MovieListFragment extends Fragment {
 
-    private static final String SORT_BY_POPULAR = "popular";
-    private static final String SORT_BY_TOP_RATED = "top_rated";
-
     private ArrayList<MovieEntity> movieArray;
-    MovieEntity[] movieList;
+    private String selectedSort;
 
     private ImageAdapter imageAdapter;
 
@@ -51,15 +49,8 @@ public class MovieListFragment extends Fragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         setHasOptionsMenu(true);
-
-//        if(savedInstanceState == null || !savedInstanceState.containsKey("MOVIE_ARRAY")) {
-//            movieArray = new ArrayList<>();
-//        }
-//        else {
-//            movieArray = savedInstanceState.getParcelableArrayList("MOVIE_ARRAY");
-//        }
+        selectedSort = getString(R.string.pref_sort_by_default);
     }
 
     @Override
@@ -67,24 +58,40 @@ public class MovieListFragment extends Fragment {
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View rootView = inflater.inflate(R.layout.fragment_movie_list, container, false);
-        //set UI controls
 
-        if(savedInstanceState == null || !savedInstanceState.containsKey("MOVIE_ARRAY")) {
+        if (savedInstanceState == null || !savedInstanceState.containsKey("MOVIE_ARRAY")) {
             movieArray = new ArrayList<>();
+        } else {
+            movieArray = savedInstanceState.getParcelableArrayList("MOVIE_ARRAY");
+            selectedSort = savedInstanceState.getString("SORT_BY");
         }
-            else {
-                movieArray = savedInstanceState.getParcelableArrayList("MOVIE_ARRAY");
-            }
 
-        initControls(rootView);
+        //set UI controls
+        GridView gridview = (GridView) rootView.findViewById(R.id.gridView);
+
+        gridview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                Toast.makeText(getActivity(), "" + position,
+                        Toast.LENGTH_SHORT).show();
+
+                Intent intent = new Intent(getContext(), DetailActivity.class);
+                intent.putExtra("MOVIE_DATA", movieArray.get(position));
+                startActivity(intent);
+            }
+        });
+
+        imageAdapter = new ImageAdapter(getActivity(), movieArray);
+        gridview.setAdapter(imageAdapter);
 
         return rootView;
     }
 
+
     @Override
     public void onStart() {
         super.onStart();
-//        fetchMovieData(selectedSort);
+        fetchMovieData(selectedSort);
     }
 
     @Override
@@ -100,12 +107,12 @@ public class MovieListFragment extends Fragment {
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
-        switch (id){
+        switch (id) {
             case R.id.action_most_popular:
-                fetchMovieData(SORT_BY_POPULAR);
+                fetchMovieData(getString(R.string.pref_sort_by_default));
                 return true;
             case R.id.action_top_rated:
-                fetchMovieData(SORT_BY_TOP_RATED);
+                fetchMovieData(getString(R.string.pref_sort_by_top_rated));
                 return true;
         }
 
@@ -116,35 +123,12 @@ public class MovieListFragment extends Fragment {
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         outState.putParcelableArrayList("MOVIE_ARRAY", movieArray);
+        outState.putString("SORT_BY", selectedSort);
     }
-//
-//    @Override
-//    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
-//        super.onActivityCreated(savedInstanceState);
-//
-//        if(savedInstanceState!=null)
-//        selectedSort = savedInstanceState.getString("MOVIE_ARRAY");
-//    }
 
-    private void initControls(View rootView) {
-
-        imageAdapter = new ImageAdapter(getActivity(), movieArray);
-
-        GridView gridview = (GridView) rootView.findViewById(R.id.gridView);
-        gridview.setAdapter(imageAdapter);
-
-        gridview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Toast.makeText(getActivity(), "" + position,
-                        Toast.LENGTH_SHORT).show();
-            }
-        });
-    }
 
     private void fetchMovieData(String sortBy) {
-//        selectedSort = sortBy;
-
+        selectedSort = sortBy;
         FetchMovieTask movieTask = new FetchMovieTask();
         movieTask.execute(sortBy);
     }
@@ -152,6 +136,7 @@ public class MovieListFragment extends Fragment {
     public class FetchMovieTask extends AsyncTask<String, Void, MovieEntity[]> {
 
         private final String LOG_TAG = FetchMovieTask.class.getSimpleName();
+
         public FetchMovieTask() {
             super();
         }
@@ -160,7 +145,7 @@ public class MovieListFragment extends Fragment {
         /**
          * Take the String representing the complete forecast in JSON Format and
          * pull out the data we need to construct the Strings needed for the wireframes.
-         *
+         * <p/>
          * Fortunately parsing is easy:  constructor takes the JSON string and converts it
          * into an Object hierarchy for us.
          */
@@ -170,15 +155,15 @@ public class MovieListFragment extends Fragment {
 
             JSONObject movieJson = new JSONObject(movieJsonStr);
             JSONArray movieJsonArray = movieJson.getJSONArray(_LIST);
-            movieList = new MovieEntity[movieJsonArray.length()];
+            MovieEntity[] movieList = new MovieEntity[movieJsonArray.length()];
 
-            for(int i = 0; i < movieJsonArray.length(); i++) {
+            for (int i = 0; i < movieJsonArray.length(); i++) {
 
                 JSONObject movie = movieJsonArray.getJSONObject(i);
                 movieList[i] = new MovieEntity(movie);
             }
 
-                return movieList;
+            return movieList;
         }
 
         @Override
@@ -201,7 +186,7 @@ public class MovieListFragment extends Fragment {
                 // Possible parameters are avaiable at OWM's forecast API page, at
                 // http://openweathermap.org/API#forecast
                 final String FORECAST_BASE_URL =
-                        "https://api.themoviedb.org/3/movie/" + sortBy +"?";
+                        "https://api.themoviedb.org/3/movie/" + sortBy + "?";
                 final String APPID_PARAM = "api_key";
 
                 Uri builtUri = Uri.parse(FORECAST_BASE_URL).buildUpon()
@@ -242,7 +227,7 @@ public class MovieListFragment extends Fragment {
                 // If the code didn't successfully get the weather data, there's no point in attemping
                 // to parse it.
                 return null;
-            }finally {
+            } finally {
                 if (urlConnection != null) {
                     urlConnection.disconnect();
                 }
@@ -270,12 +255,8 @@ public class MovieListFragment extends Fragment {
 
             if (result != null) {
                 imageAdapter.clear();
-                movieArray = new ArrayList<MovieEntity>(Arrays.asList(result));
-                imageAdapter = new ImageAdapter(getActivity(), movieArray);
+                movieArray.addAll(new ArrayList<MovieEntity>(Arrays.asList(result)));
                 imageAdapter.notifyDataSetChanged();
-//                for(MovieEntity entity : result) {
-//                    imageAdapter.add(movieArray);
-//                }
             }
         }
     }

@@ -26,11 +26,46 @@ public class MovieEntity implements Parcelable {
 
     public MovieEntity(JSONObject movieJson) throws JSONException {
 
-            imagePath = _IMAGE_BASE_URL + movieJson.getString(_IMAGE);
-            title = movieJson.getString(_TITLE);
-            releaseDate = movieJson.getString(_RELEASE_DATE);
-            overview = movieJson.getString(_OVERVIEW);
-            rating = movieJson.getString(_RATING);
+        imagePath = _IMAGE_BASE_URL + movieJson.getString(_IMAGE);
+        title = movieJson.getString(_TITLE);
+        releaseDate = movieJson.getString(_RELEASE_DATE);
+        overview = movieJson.getString(_OVERVIEW);
+        rating = movieJson.getString(_RATING);
+    }
+
+    public MovieEntity(Parcel parcel) {
+        imagePath = parcel.readString();
+        title = parcel.readString();
+        releaseDate = parcel.readString();
+        overview = parcel.readString();
+        rating = parcel.readString();
+
+    }
+
+    public static final Creator<MovieEntity> CREATOR = new Creator<MovieEntity>() {
+        @Override
+        public MovieEntity createFromParcel(Parcel parcel) {
+            return new MovieEntity(parcel);
+        }
+
+        @Override
+        public MovieEntity[] newArray(int size) {
+            return new MovieEntity[size];
+        }
+    };
+    
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel parcel, int flags) {
+        parcel.writeString(imagePath);
+        parcel.writeString(title);
+        parcel.writeString(releaseDate);
+        parcel.writeString(overview);
+        parcel.writeString(rating);
     }
 
     public String getImagePath() {
@@ -71,15 +106,5 @@ public class MovieEntity implements Parcelable {
 
     public void setRating(String rating) {
         this.rating = rating;
-    }
-
-    @Override
-    public int describeContents() {
-        return 0;
-    }
-
-    @Override
-    public void writeToParcel(Parcel dest, int flags) {
-
     }
 }
