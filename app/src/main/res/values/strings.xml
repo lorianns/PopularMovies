@@ -7,6 +7,8 @@
 -->
     <string name="app_name">Pop Movies</string>
 
+    <string name="detail_activity_name">MovieDetail</string>
+
     <!--
      By convention, "action" denotes that this String will be used as the label for an Action,
      typically from the action bar.  The ActionBar is limited real estate, so shorter is better.

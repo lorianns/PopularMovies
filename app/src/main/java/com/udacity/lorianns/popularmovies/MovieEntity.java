@@ -53,7 +53,7 @@ public class MovieEntity implements Parcelable {
             return new MovieEntity[size];
         }
     };
-    
+
     @Override
     public int describeContents() {
         return 0;

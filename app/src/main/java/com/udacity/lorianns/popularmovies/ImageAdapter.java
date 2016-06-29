@@ -14,7 +14,7 @@ import java.util.ArrayList;
 /**
  * Created by lorianns on 6/25/16.
  */
-public class ImageAdapter extends BaseAdapter{
+public class ImageAdapter extends BaseAdapter {
 
     private Context mContext;
     // references to movie images
@@ -43,14 +43,14 @@ public class ImageAdapter extends BaseAdapter{
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
         ImageView imageView;
-        if(convertView == null){
+        if (convertView == null) {
             imageView = new ImageView(mContext);
 
-            int movieHeight = (int)mContext.getResources().getDimension(R.dimen.movie_height);
+            int movieHeight = (int) mContext.getResources().getDimension(R.dimen.movie_height);
             imageView.setLayoutParams(new GridView.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, movieHeight));
             imageView.setScaleType(ImageView.ScaleType.FIT_XY);
 
-        } else{
+        } else {
             imageView = (ImageView) convertView;
         }
 
@@ -59,7 +59,7 @@ public class ImageAdapter extends BaseAdapter{
         return imageView;
     }
 
-    public void clear(){
+    public void clear() {
         mMovieList.clear();
     }
 }

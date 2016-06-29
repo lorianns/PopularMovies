@@ -16,7 +16,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.GridView;
-import android.widget.Toast;
+import android.widget.ProgressBar;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -39,8 +39,8 @@ public class MovieListFragment extends Fragment {
 
     private ArrayList<MovieEntity> movieArray;
     private String selectedSort;
-
     private ImageAdapter imageAdapter;
+    private ProgressBar progressBar;
 
     public MovieListFragment() {
         // Required empty public constructor
@@ -66,15 +66,14 @@ public class MovieListFragment extends Fragment {
             selectedSort = savedInstanceState.getString("SORT_BY");
         }
 
-        //set UI controls
-        GridView gridview = (GridView) rootView.findViewById(R.id.gridView);
+        // Get a reference to the ProgressBar
+        progressBar = (ProgressBar) rootView.findViewById(R.id.progressBar);
 
+        // Get a reference to the GridView, and attach this adapter to it.
+        GridView gridview = (GridView) rootView.findViewById(R.id.gridView);
         gridview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Toast.makeText(getActivity(), "" + position,
-                        Toast.LENGTH_SHORT).show();
-
                 Intent intent = new Intent(getContext(), DetailActivity.class);
                 intent.putExtra("MOVIE_DATA", movieArray.get(position));
                 startActivity(intent);
@@ -142,13 +141,6 @@ public class MovieListFragment extends Fragment {
         }
 
 
-        /**
-         * Take the String representing the complete forecast in JSON Format and
-         * pull out the data we need to construct the Strings needed for the wireframes.
-         * <p/>
-         * Fortunately parsing is easy:  constructor takes the JSON string and converts it
-         * into an Object hierarchy for us.
-         */
         private MovieEntity[] getMovieDataFromJson(String movieJsonStr) throws JSONException {
 
             final String _LIST = "results";
@@ -158,12 +150,16 @@ public class MovieListFragment extends Fragment {
             MovieEntity[] movieList = new MovieEntity[movieJsonArray.length()];
 
             for (int i = 0; i < movieJsonArray.length(); i++) {
-
                 JSONObject movie = movieJsonArray.getJSONObject(i);
                 movieList[i] = new MovieEntity(movie);
             }
-
             return movieList;
+        }
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            progressBar.setVisibility(View.VISIBLE);
         }
 
         @Override
@@ -182,9 +178,9 @@ public class MovieListFragment extends Fragment {
             String sortBy = params[0];
 
             try {
-                // Construct the URL for the OpenWeatherMap query
-                // Possible parameters are avaiable at OWM's forecast API page, at
-                // http://openweathermap.org/API#forecast
+                // Construct the URL for the themoviedb query
+                // Possible parameters are avaiable at themoviedb API page, at
+                // https://www.themoviedb.org/
                 final String FORECAST_BASE_URL =
                         "https://api.themoviedb.org/3/movie/" + sortBy + "?";
                 final String APPID_PARAM = "api_key";
@@ -195,7 +191,7 @@ public class MovieListFragment extends Fragment {
 
                 URL url = new URL(builtUri.toString());
 
-                // Create the request to OpenWeatherMap, and open the connection
+                // Create the request to themoviedb, and open the connection
                 urlConnection = (HttpURLConnection) url.openConnection();
                 urlConnection.setRequestMethod("GET");
                 urlConnection.connect();
@@ -224,7 +220,7 @@ public class MovieListFragment extends Fragment {
                 movieJsonStr = buffer.toString();
             } catch (IOException e) {
                 Log.e(LOG_TAG, "Error ", e);
-                // If the code didn't successfully get the weather data, there's no point in attemping
+                // If the code didn't successfully get the movie data, there's no point in attemping
                 // to parse it.
                 return null;
             } finally {
@@ -255,9 +251,11 @@ public class MovieListFragment extends Fragment {
 
             if (result != null) {
                 imageAdapter.clear();
+                //Update the Gridview adapter with the fetch movies results
                 movieArray.addAll(new ArrayList<MovieEntity>(Arrays.asList(result)));
                 imageAdapter.notifyDataSetChanged();
             }
+            progressBar.setVisibility(View.GONE);
         }
     }
 

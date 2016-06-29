@@ -4,16 +4,22 @@
     android:layout_height="match_parent"
     tools:context="com.udacity.lorianns.popularmovies.MovieListFragment">
 
+    <ProgressBar
+        android:id="@+id/progressBar"
+        style="@android:style/Widget.ProgressBar.Small"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center" />
 
     <GridView
         android:id="@+id/gridView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:columnWidth="180dp"
-        android:numColumns="auto_fit"
-        android:verticalSpacing="0dp"
+        android:gravity="center"
         android:horizontalSpacing="0dp"
+        android:numColumns="auto_fit"
+        android:scrollbars="none"
         android:stretchMode="columnWidth"
-        android:gravity="center"/>
-
+        android:verticalSpacing="0dp" />
 </FrameLayout>

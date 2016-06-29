@@ -2,7 +2,11 @@ package com.udacity.lorianns.popularmovies;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -14,26 +18,48 @@ public class DetailActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_detail);
+        if (savedInstanceState == null) {
+            getSupportFragmentManager().beginTransaction()
+                    .add(R.id.container, new DetailFragment())
+                    .commit();
+        }
+    }
 
-        TextView title = (TextView) findViewById(R.id.title);
-        TextView releaseYear = (TextView) findViewById(R.id.releaseYear);
-        TextView duration = (TextView) findViewById(R.id.duration);
-        TextView rating = (TextView) findViewById(R.id.rating);
-        TextView overview = (TextView) findViewById(R.id.overview);
-        ImageView ivPoster = (ImageView) findViewById(R.id.imageView);
 
-        Intent i = getIntent();
-        if (getIntent() != null || getIntent().hasExtra("MOVIE_DATA")) {
-            MovieEntity movie = getIntent().getParcelableExtra("MOVIE_DATA");
+    /**
+     * A placeholder fragment containing a simple view.
+     */
+    public static class DetailFragment extends Fragment {
 
-            title.setText(movie.getTitle());
-            releaseYear.setText(movie.getReleaseDate());
-            duration.setText(movie.getTitle());
-            rating.setText(movie.getRating() + "/10");
-            overview.setText(movie.getOverview());
-
-            Picasso.with(this).load(movie.getImagePath()).into(ivPoster);
+        public DetailFragment() {
+            // Required empty public constructor
         }
 
+        @Override
+        public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                                 Bundle savedInstanceState) {
+
+            View rootView = inflater.inflate(R.layout.fragment_detail, container, false);
+
+            TextView title = (TextView) rootView.findViewById(R.id.title);
+            TextView releaseYear = (TextView) rootView.findViewById(R.id.releaseYear);
+            TextView rating = (TextView) rootView.findViewById(R.id.rating);
+            TextView overview = (TextView) rootView.findViewById(R.id.overview);
+            ImageView ivPoster = (ImageView) rootView.findViewById(R.id.imageView);
+
+            // The detail Activity called via intent.  Inspect the intent for movie data.
+            Intent intent = getActivity().getIntent();
+            if (intent != null && intent.hasExtra("MOVIE_DATA")) {
+                MovieEntity movie = intent.getParcelableExtra("MOVIE_DATA");
+
+                title.setText(movie.getTitle());
+                releaseYear.setText(movie.getReleaseDate());
+                rating.setText(String.format(getString(R.string.rating), movie.getRating()));
+                overview.setText(movie.getOverview());
+
+                Picasso.with(getActivity()).load(movie.getImagePath()).into(ivPoster);
+            }
+            return rootView;
+        }
     }
 }
